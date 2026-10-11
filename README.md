@@ -24,31 +24,42 @@ Known limits:
 - `super_v_clipboard show` tells the daemon (over a Unix socket) to open its window.
 - Wayland doesn't let apps type into other windows, so for auto-paste the daemon makes a tiny virtual keyboard through `/dev/uinput` that can only press Ctrl+V.
 
+Written in Go. The window and tray icon use [Fyne](https://fyne.io), and clipboard access uses [golang.design/x/clipboard](https://github.com/golang-design/clipboard).
+
 ## Install
 
-1. Install build dependencies (Ubuntu/Debian):
-   ```bash
-   sudo apt install git golang gcc libgl1-mesa-dev xorg-dev
-   ```
-   You need **Go 1.23 or newer** (check with `go version`). Ubuntu 24.04's `golang` is too old, so on 24.04 get Go from snap instead:
-   ```bash
-   sudo snap install go --classic
-   ```
+### 1. Get it
 
-2. Get the code and go into its folder. **Run every remaining step from this folder.**
-   ```bash
-   git clone https://github.com/naftulisinger/super_v_clipboard.git
-   cd super_v_clipboard
-   ```
+Pick **one** option.
 
-3. Build and install:
+**Option A: download a ready-made build (easiest, no Go needed).** For 64-bit (x86-64) Ubuntu 24.04 or newer, or a similar distro.
+```bash
+wget https://github.com/naftulisinger/super_v_clipboard/releases/latest/download/super_v_clipboard-linux-amd64.tar.gz
+tar xzf super_v_clipboard-linux-amd64.tar.gz
+cd super_v_clipboard
+```
+You can also download it by hand from the [Releases page](https://github.com/naftulisinger/super_v_clipboard/releases).
+
+**Option B: build from source.** Use this on older distros, other CPUs, or if you'd rather build it yourself.
+```bash
+sudo apt install git golang gcc libgl1-mesa-dev xorg-dev
+git clone https://github.com/naftulisinger/super_v_clipboard.git
+cd super_v_clipboard
+go build -o super_v_clipboard .
+```
+You need **Go 1.23 or newer** (check with `go version`). Ubuntu 24.04's `golang` is too old, so on 24.04 install Go with `sudo snap install go --classic` instead.
+
+### 2. Set it up
+
+**Run these steps from the `super_v_clipboard` folder** you just went into.
+
+1. Install the program:
    ```bash
-   go build -o super_v_clipboard .
    mkdir -p ~/.local/bin
    install -m755 super_v_clipboard ~/.local/bin/
    ```
 
-4. Allow auto-paste (one time). This lets the app press Ctrl+V for you:
+2. Allow auto-paste (one time). This lets the app press Ctrl+V for you:
    ```bash
    sudo cp 60-super-v-clipboard-uinput.rules /etc/udev/rules.d/
    sudo udevadm control --reload
@@ -56,7 +67,7 @@ Known limits:
    ```
    If you skip this step, picking an entry only copies it, and you paste it yourself.
 
-5. Start it automatically at login:
+3. Start it automatically at login:
    ```bash
    mkdir -p ~/.config/systemd/user
    cp super_v_clipboard.service ~/.config/systemd/user/
@@ -64,7 +75,7 @@ Known limits:
    systemctl --user enable --now super_v_clipboard
    ```
 
-6. Add a keyboard shortcut. Print the exact command to use:
+4. Add a keyboard shortcut. Print the exact command to use:
    ```bash
    echo "$HOME/.local/bin/super_v_clipboard show"
    ```
@@ -81,15 +92,14 @@ Known limits:
 ```bash
 journalctl --user -u super_v_clipboard -n 20
 ```
-- `auto-paste disabled ... permission denied`: redo step 4, then log out and back in.
+- `auto-paste disabled ... permission denied`: redo step 2.2, then log out and back in.
 - `super_v_clipboard daemon is not running`: run `systemctl --user start super_v_clipboard`.
+- `version 'GLIBC_2.xx' not found` (downloaded build): your distro is too old for it. Use Option B to build from source.
 
 ## Updating
 
-From the `super_v_clipboard` folder you cloned:
+Get the new version the same way as in step 1 (download it again, or `git pull` and `go build -o super_v_clipboard .`). Then, from the `super_v_clipboard` folder:
 ```bash
-git pull
-go build -o super_v_clipboard .
 install -m755 super_v_clipboard ~/.local/bin/super_v_clipboard.new && mv ~/.local/bin/super_v_clipboard.new ~/.local/bin/super_v_clipboard
 systemctl --user restart super_v_clipboard
 ```
@@ -108,3 +118,7 @@ Then remove the keyboard shortcut in Settings.
 ## Contributing
 
 Issues and pull requests are welcome. Please run `gofmt` and `go vet ./...` before sending changes.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
