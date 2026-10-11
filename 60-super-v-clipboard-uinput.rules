@@ -1,0 +1,2 @@
+# Let the logged-in desktop user create virtual input devices (super_v_clipboard auto-paste).
+KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"
